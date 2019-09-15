@@ -9,7 +9,8 @@ WHERE country_id = 'BDV'
 GROUP BY 1
 ORDER BY 2 DESC
 LIMIT 1
-
+--Result: (5NPAU, 544)-----
+--Query Link: https://console.cloud.google.com/bigquery?sq=43653989283:41935b3782414a988872c20b6f8e5ad0
 
 /*Q2:
 Between 2019-02-03 00:00:00 and 2019-02-04 23:59:59, there are four users who
@@ -20,11 +21,12 @@ form (user_id, site_id, number of visits) in the box below.)
 
 SELECT user_id, site_id, COUNT(1) AS number_of_visits
 FROM `stuart-251306.moloch_exercise.visits`
-WHERE ts >= '2019-02-03 00:00:00' AND ts <= '2019-02-04 23:59:59' --subquerry to get a new table Between 2019-02-03 00:00:00 and 2019-02-04 23:59:59
+WHERE ts >= '2019-02-03 00:00:00' AND ts <= '2019-02-04 23:59:59'
 GROUP BY 2, 1
 HAVING number_of_visits > 10
 ORDER BY 3 DESC
-
+--Result: (LC3A59, N0OTG, 26) (LC06C3, N0OTG, 25) (LC3C9D, N0OTG, 17) (LC3C7E, 3POLC, 15)
+--Query Link: https://console.cloud.google.com/bigquery?sq=43653989283:57b852fb497c4a1aae6077dd2b087165
 
 /*Q3:
 For each site, compute the unique number of users whose last visit (found in the
@@ -34,6 +36,7 @@ sites? (hint: site "3POLC" is ranked at 5th with 28 users whose last visit in
 the data set was to 3POLC; simply provide three pairs in the form (site_id,
 number of users).)
 */
+
 WITH t1 AS (
 SELECT *, RANK() OVER (PARTITION BY user_id ORDER BY ts DESC) AS seq
 FROM `stuart-251306.moloch_exercise.visits`)
@@ -48,6 +51,8 @@ WHERE seq = 1
 GROUP BY site_id
 ORDER BY 2 DESC
 
+--Result: (5NPAU, 992) (N0OTG, 561) (QGO3G, 289)
+--Query Link: https://console.cloud.google.com/bigquery?sq=43653989283:7d34718f9d0c4320b67d2f798c912421
 
 /*Q4:
 For each user, determine the first site he/she visited and the last site he/she
@@ -55,7 +60,9 @@ visited based on the timestamp data. Compute the number of users whose first/las
 visits are to the same website. What is the number?
 */
 WITH r AS(
-SELECT *, RANK() OVER(PARTITION BY user_id ORDER BY ts DESC) AS desc_rank, RANK() OVER(PARTITION BY user_id ORDER BY ts) asc_rank
+SELECT *,
+       RANK() OVER(PARTITION BY user_id ORDER BY ts DESC) AS desc_rank,
+       RANK() OVER(PARTITION BY user_id ORDER BY ts) asc_rank
 FROM `stuart-251306.moloch_exercise.visits`), --get the ranking of time when a user visited a certain site.
 a AS(
 SELECT user_id, site_id AS last_site
@@ -75,3 +82,5 @@ FROM a
 JOIN b
 ON a.user_id=b.user_id
 WHERE last_site = first_site) --subquerry to get the users whose first/last visits are to the same site
+--Result: 1670
+--Query Link: https://console.cloud.google.com/bigquery?sq=43653989283:ded10b40a37d4eeabf92e3f55473bba0
